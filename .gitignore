@@ -1,0 +1,5 @@
+*.log
+toolchain/
+output/
+Lichee-Pi-linux/
+buildroot-2021.02.3/
