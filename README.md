@@ -60,3 +60,23 @@ Offset 8KB: Chứa u-boot-sunxi-with-spl.bin.
 Phân vùng 1 (FAT): Chứa zImage, suniv-f1c100s-licheepi-nano.dtb và boot.scr.
 
 Phân vùng 2 (EXT4): Chứa hệ thống tệp tin gốc RootFS (BusyBox).
+
+## 8. Kiểm Thử Giả Lập (Emulation Testing)
+
+Sử dụng kỹ thuật **Chroot** kết hợp với trình giả lập **QEMU User-mode** để chạy thử nghiệm RootFS ngay trên môi trường Host (x86_64).
+
+![Kết quả kiểm thử QEMU](images/qemu_test_result.png)
+
+### Giải thích chi tiết kết quả:
+
+Dựa trên hình ảnh thực tế quá trình kiểm thử, hệ thống đã xác nhận được các thông số kỹ thuật cốt lõi:
+
+* **Xác minh kiến trúc (Architecture Verification):** Lệnh `uname -m` trả về giá trị **`armv7l`**. Đây là bằng chứng quan trọng nhất cho thấy trình giả lập `qemu-arm-static` đã ánh xạ thành công các lời gọi hệ thống (syscalls) từ kiến trúc ARM của LicheePi Nano sang kiến trúc x86 của máy tính Host. Điều này khẳng định bộ Toolchain biên dịch chéo đã hoạt động chính xác.
+
+* **Kiểm tra tính toàn vẹn của RootFS:**
+    Lệnh `busybox` thực thi thành công và hiển thị phiên bản **v1.33.0**. Danh sách các tập lệnh hệ thống (như `ls`, `cp`, `mkdir`, `sh`...) hiện ra đầy đủ, chứng tỏ quá trình đóng gói hệ thống tệp tin gốc bằng Buildroot không xảy ra lỗi phân đoạn (segmentation fault) và các thư viện C (`uClibc` hoặc `musl`) đã được liên kết đúng cách.
+
+* **Môi trường giả lập (Environment):**
+    Việc truy cập được vào Shell (`/bin/sh`) thông qua lệnh `chroot` cho thấy cấu trúc phân vùng EXT4 và thứ tự các thư mục tiêu chuẩn Linux (`/bin`, `/sbin`, `/etc`, `/usr`) đã được thiết lập đúng theo tiêu chuẩn phân phối nhúng.
+
+**Kết luận:** Bản build hệ điều hành đã sẵn sàng để nạp vào thẻ nhớ (TF Card) và khởi động trực tiếp trên phần cứng LicheePi Nano.
